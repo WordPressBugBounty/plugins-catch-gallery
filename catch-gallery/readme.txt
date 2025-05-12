@@ -3,7 +3,7 @@ Contributors: catchplugins, catchthemes, sakinshrestha, pratikshrestha, maheshma
 Donate link: https://catchplugins.com/plugins/catch-gallery/
 Tags: gallery, tiled gallery, image gallery, mosaic, carousel, lightbox, media, jetpack, jetpack lite
 Requires at least: 5.7
-Tested up to: 6.4
+Tested up to: 6.8
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -50,6 +50,9 @@ Not so easy way (via FTP) :
 For Detailed Plugin instructions, checkout Instructions tab at https://catchplugins.com/plugins/catch-gallery/#instructions
 
 == Changelog ==
+
+= 2.1 (Released: May 12, 2024) =
+* Compatibility check up to version 6.8
 
 = 2.0 (Released: November 15, 2023) =
 * Compatibility check up to version 6.4

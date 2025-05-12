@@ -17,6 +17,10 @@
 include_once plugin_dir_path( __FILE__ ) . '../math/class-constrained-array-rounding.php';
 if ( ! class_exists( 'Catch_Gallery_Tiled_Gallery' ) ) :
 	class Catch_Gallery_Tiled_Gallery {
+
+		public $atts;
+		public $float;
+
 		public function __construct() {
 			add_filter( 'jetpack_gallery_types', array( $this, 'jetpack_gallery_types' ), 9 );
 		}
@@ -231,6 +235,7 @@ if ( ! class_exists( 'Catch_Gallery_Tiled_Gallery' ) ) :
 					}
 				}
 
+				//$new_img_array = '';
 				// no cached files - let's finally resize it
 				$tp_image = wp_get_image_editor( $file_path );
 				if ( ! is_wp_error( $tp_image ) ) {
@@ -501,6 +506,8 @@ endif;
 if ( ! class_exists( 'Catch_Gallery_Tiled_Gallery_Shape' ) ) :
 	class Catch_Gallery_Tiled_Gallery_Shape {
 		static $shapes_used = array();
+		public $images;
+		public $images_left;
 
 		public function __construct( $images ) {
 			$this->images      = $images;
@@ -614,7 +621,11 @@ endif;
 
 if ( ! class_exists( 'Catch_Gallery_Tiled_Gallery_Grouper' ) ) :
 	class Catch_Gallery_Tiled_Gallery_Grouper {
+		public $last_shape;
+		public $images;
+		public $grouped_images;
 		public $margin = 4;
+		
 		public function __construct( $attachments ) {
 			$content_width = Catch_Gallery_Tiled_Gallery::get_content_width();
 			//$ua_info = new Jetpack_User_Agent_Info();
@@ -733,6 +744,14 @@ endif;
 
 if ( ! class_exists( 'Catch_Gallery_Tiled_Gallery_Row' ) ) :
 	class Catch_Gallery_Tiled_Gallery_Row {
+
+		public $groups;
+		public $ratio;
+		public $weighted_ratio;
+		public $width;
+		public $raw_height;
+		public $height;
+
 		public function __construct( $groups ) {
 			$this->groups         = $groups;
 			$this->ratio          = $this->get_ratio();
@@ -759,6 +778,13 @@ endif;
 
 if ( ! class_exists( 'Catch_Gallery_Tiled_Gallery_Group' ) ) :
 	class Catch_Gallery_Tiled_Gallery_Group {
+
+		public $images;
+		public $ratio;
+		public $height;
+		public $raw_width;
+		public $width;
+
 		public function __construct( $images ) {
 			$this->images = $images;
 			$this->ratio  = $this->get_ratio();

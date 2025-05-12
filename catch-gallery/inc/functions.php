@@ -5,6 +5,9 @@
  */
 if ( ! class_exists( 'Catch_Gallery_Settings' ) ) :
 class Catch_Gallery_Settings {
+
+	public $gallery_types;
+	
 	function __construct() {
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_filter( 'plugin_row_meta', array( $this, 'add_plugin_meta_links' ), 10, 2);

@@ -49,7 +49,7 @@ class Catch_Gallery_Constrained_Array_Rounding {
 	}
 
 	private static function adjust_constrained_array( &$bound_array_int, $adjustment ) {
-		usort( $bound_array_int, array( 'self', 'cmp_desc_fraction' ) );
+		usort( $bound_array_int, array( 'Catch_Gallery_Constrained_Array_Rounding', 'cmp_desc_fraction' ) );
 
 		$start = 0;
 		$end = $adjustment - 1;
@@ -59,7 +59,7 @@ class Catch_Gallery_Constrained_Array_Rounding {
 			$bound_array_int[ $i % $length ]['floor']++;
 		}
 
-		usort( $bound_array_int, array( 'self', 'cmp_asc_index' ) );
+		usort( $bound_array_int, array( 'Catch_Gallery_Constrained_Array_Rounding', 'cmp_asc_index' ) );
 	}
 
 	private static function cmp_desc_fraction( $a, $b ) {
