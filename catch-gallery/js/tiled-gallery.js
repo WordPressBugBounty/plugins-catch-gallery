@@ -75,17 +75,10 @@ TiledGallery.prototype.resize = function() {
 			}
 		} );
 
-		if ( ! imagesLoaded ) {
-			var loadCallback = arguments.callee;
-
-			// Once all of the images have loaded,
-			// re-call this containing function.
-			$( window ).load( function () {
-				loadCallback( null, thisGallery );
-			} );
-
-			return;
+		function onWindowLoad() {
+			resizeGallery(thisGallery);
 		}
+		$(window).on('load', onWindowLoad);
 
 		if ( ! thisGallery.data( 'sizes-set' ) ) {
 			// Maintain a record of the original widths and heights of these elements
