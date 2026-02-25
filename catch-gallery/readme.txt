@@ -4,7 +4,7 @@ Donate link: https://catchplugins.com/plugins/catch-gallery/
 Tags: gallery, tiled gallery, image gallery, mosaic, carousel, lightbox, media, jetpack, jetpack lite
 Requires at least: 5.9
 Tested up to: 6.9
-Stable tag: 2.4
+Stable tag: 2.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,6 +50,10 @@ Not so easy way (via FTP) :
 For Detailed Plugin instructions, checkout Instructions tab at https://catchplugins.com/plugins/catch-gallery/#instructions
 
 == Changelog ==
+
+= 2.4.1 (Released: February 25, 2026) =
+* Bug Fixed: Fixed JS enqueue path for adding catch themes tab item in Themes add theme section
+* Bug Fixed: Fixed error occurred while adding new themes
 
 = 2.4 (Released: February 02, 2026) =
 * Bug Fixed: WordPress.WP.I18n.MissingTranslatorsComment
