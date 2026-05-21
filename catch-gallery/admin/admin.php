@@ -21,7 +21,7 @@ if (! function_exists('catch_gallery_add_plugin_settings_menu')) :
 		add_menu_page(
 			esc_html__('Catch Gallery', 'catch-gallery'), //page title
 			esc_html__('Catch Gallery', 'catch-gallery'), //menu title
-			'edit_posts', //capability needed
+			'manage_options', //capability needed
 			'catch-gallery', //menu slug (and page query url)
 			'catch_gallery_settings',
 			'dashicons-format-gallery',
@@ -36,7 +36,7 @@ if (! function_exists('catch_gallery_settings')) :
 	function catch_gallery_settings()
 	{
 		$child_theme = false;
-		if (! current_user_can('edit_posts')) {
+		if (! current_user_can('manage_options')) {
 			wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'catch-gallery'));
 		}
 
@@ -89,52 +89,56 @@ endif;
 
 if (! function_exists('catch_gallery_sanitize_callback')):
 	/**
-	 *Catch gallery: sanitize_callback
+	 * Catch gallery: sanitize_callback
 	 * Catch gallery Sanitization function callback
 	 *
 	 * @param array $input Input data for sanitization.
+	 * @return array Sanitized options array.
 	 */
 	function catch_gallery_sanitize_callback($input)
 	{
 		$defaults = catch_gallery_default_options();
 
 		if (isset($input['reset']) && $input['reset']) {
-			//If reset, restore defaults
+			// If reset, restore defaults.
 			return $defaults;
 		}
 
-		// Verify the nonce before proceeding.
+		// Bail on autosave or failed nonce — return defaults to avoid corrupting saved data.
 		if ((defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
-			|| (! isset($_POST['catch_gallery_nounce'])
-				|| ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['catch_gallery_nounce'])), basename(__FILE__)))
-			|| (! check_admin_referer(basename(__FILE__), 'catch_gallery_nounce'))
+			|| ! isset($_POST['catch_gallery_nounce'])
+			|| ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['catch_gallery_nounce'])), basename(__FILE__))
+			|| ! check_admin_referer(basename(__FILE__), 'catch_gallery_nounce')
 		) {
-			if ($input) {
+			return $defaults;
+		}
 
-				if (isset($input['carousel_enable']) && $input['carousel_enable']) {
-					$input['carousel_enable'] = catch_gallery_sanitize_checkbox($input['carousel_enable']);
-				}
+		// Sanitize each field explicitly.
+		$output = array();
 
-				if (isset($input['carousel_background_color']) && $input['carousel_background_color']) {
-					$input['carousel_background_color'] = sanitize_key($input['carousel_background_color']);
-				}
+		$output['carousel_enable']           = isset($input['carousel_enable'])
+			? catch_gallery_sanitize_checkbox($input['carousel_enable'])
+			: false;
 
-				if (isset($input['carousel_display_exif']) && $input['carousel_display_exif']) {
-					$input['carousel_display_exif'] = catch_gallery_sanitize_checkbox($input['carousel_display_exif']);
-				}
+		$output['carousel_background_color'] = isset($input['carousel_background_color'])
+			? sanitize_key($input['carousel_background_color'])
+			: 'black';
 
-				if (isset($input['comments_display']) && $input['comments_display']) {
-					$input['comments_display'] = catch_gallery_sanitize_checkbox($input['comments_display']);
-				}
+		$output['carousel_display_exif']     = isset($input['carousel_display_exif'])
+			? catch_gallery_sanitize_checkbox($input['carousel_display_exif'])
+			: false;
 
-				if (isset($input['fullsize_display']) && $input['fullsize_display']) {
-					$input['fullsize_display'] = catch_gallery_sanitize_checkbox($input['fullsize_display']);
-				}
-			}
+		$output['comments_display']          = isset($input['comments_display'])
+			? catch_gallery_sanitize_checkbox($input['comments_display'])
+			: false;
 
-			return $input;
-		} // End if().
-		return 'Invalid Nonce';
+		$output['fullsize_display']          = isset($input['fullsize_display'])
+			? catch_gallery_sanitize_checkbox($input['fullsize_display'])
+			: false;
+
+		$output['reset'] = false;
+
+		return $output;
 	}
 endif;
 

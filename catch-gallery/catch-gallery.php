@@ -12,7 +12,7 @@ if (! defined('ABSPATH')) exit;
  * Plugin Name: Catch Gallery
  * Plugin URI:  https://catchplugins.com/plugins/catch-gallery/
  * Description: Catch Gallery allows you to add three different types of layouts (in addition to the default layout provided by WordPress – Thumbnail Grid) for your galleries to stand out—Tiled Mosaic, Square Tiles, Circles.
- * Version:     2.4.1
+ * Version:     3.0
  * Author:      Catch Plugins
  * Author URI:  https://catchplugins.com
  * License:     GPL-2.0+
@@ -40,7 +40,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 if (! defined('CATCH_GALLERY_VERSION')) {
-	define('CATCH_GALLERY_VERSION', '2.4.1');
+	define('CATCH_GALLERY_VERSION', '3.0');
 }
 
 // The URL of the directory that contains the plugin
@@ -89,13 +89,13 @@ add_action('plugins_loaded', 'catch_gallery_load_textdomain');
 
 
 // Include admin part.
-include(plugin_dir_path(__FILE__) . 'admin/admin.php');
+require_once plugin_dir_path(__FILE__) . 'admin/admin.php';
 
-include(plugin_dir_path(__FILE__) . 'inc/functions.php');
+require_once plugin_dir_path(__FILE__) . 'inc/functions.php';
 
-include(plugin_dir_path(__FILE__) . 'inc/tiled-gallery.php');
+require_once plugin_dir_path(__FILE__) . 'inc/tiled-gallery.php';
 
-include(plugin_dir_path(__FILE__) . 'inc/jetpack-carousel.php');
+require_once plugin_dir_path(__FILE__) . 'inc/jetpack-carousel.php';
 
 /* CTP tabs removal options */
 require plugin_dir_path(__FILE__) . '/inc/ctp-tabs-removal.php';

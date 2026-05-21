@@ -46,24 +46,50 @@ if (! class_exists('Catch_Gallery_Settings')) :
 
 			if (CATCH_GALLERY_BASENAME == $file) {
 
-				$meta_fields[] = "<a href='https://catchplugins.com/support-forum/forum/catch-gallery/' target='_blank'>Support Forum</a>";
-				$meta_fields[] = "<a href='https://wordpress.org/support/plugin/catch-gallery/reviews#new-post' target='_blank' title='Rate'>
-			        <i class='ct-rate-stars'>"
-					. "<svg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-star'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>"
-					. "<svg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-star'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>"
-					. "<svg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-star'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>"
-					. "<svg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-star'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>"
-					. "<svg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-star'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>"
-					. "</i></a>";
+				$allowed_html = array(
+					'a'   => array(
+						'href'   => array(),
+						'target' => array(),
+						'title'  => array(),
+					),
+					'i'   => array('class' => array()),
+					'svg' => array(
+						'xmlns'        => array(),
+						'width'        => array(),
+						'height'       => array(),
+						'viewbox'      => array(),
+						'fill'         => array(),
+						'stroke'       => array(),
+						'stroke-width' => array(),
+						'stroke-linecap'  => array(),
+						'stroke-linejoin' => array(),
+						'class'           => array(),
+					),
+					'polygon' => array('points' => array()),
+				);
 
-				$stars_color = "#ffb900";
+				$star_svg = "<svg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-star'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>";
 
-				echo "<style>"
-					. ".ct-rate-stars{display:inline-block;color:" . esc_attr($stars_color) . ";position:relative;top:3px;}"
-					. ".ct-rate-stars svg{fill:" . esc_attr($stars_color) . ";}"
-					. ".ct-rate-stars svg:hover{fill:" . esc_attr($stars_color) . "}"
-					. ".ct-rate-stars svg:hover ~ svg{fill:none;}"
-					. "</style>";
+				$meta_fields[] = wp_kses(
+					"<a href='https://catchplugins.com/support-forum/forum/catch-gallery/' target='_blank'>Support Forum</a>",
+					$allowed_html
+				);
+				$meta_fields[] = wp_kses(
+					"<a href='https://wordpress.org/support/plugin/catch-gallery/reviews#new-post' target='_blank' title='Rate'>"
+					. "<i class='ct-rate-stars'>"
+					. str_repeat($star_svg, 5)
+					. "</i></a>",
+					$allowed_html
+				);
+
+				$stars_color = '#ffb900';
+
+				echo '<style>'
+					. '.ct-rate-stars{display:inline-block;color:' . esc_attr($stars_color) . ';position:relative;top:3px;}'
+					. '.ct-rate-stars svg{fill:' . esc_attr($stars_color) . ';}'
+					. '.ct-rate-stars svg:hover{fill:' . esc_attr($stars_color) . '}'
+					. '.ct-rate-stars svg:hover ~ svg{fill:none;}'
+					. '</style>';
 			}
 
 			return $meta_fields;
@@ -82,7 +108,7 @@ if (! class_exists('Catch_Gallery_Settings')) :
 			$schema['type'] = array(
 				'type' => 'string',
 				'enum' => array_keys($this->gallery_types),
-				'description' => __('Type of gallery.', 'catch-gallery'),
+				'description' => esc_html__('Type of gallery.', 'catch-gallery'),
 				'default' => 'default',
 			);
 			return $schema;
@@ -143,7 +169,7 @@ if (! function_exists('catch_gallery_default_options')) :
 		$default_options['comments_display']          = 1;
 		$default_options['fullsize_display']          = 1;
 
-		if (null == $option) {
+		if (null === $option) {
 			return apply_filters('catch_gallery_options', $default_options);
 		} else {
 			return $default_options[$option];
@@ -161,6 +187,6 @@ if (! function_exists('catch_gallery_get_options')) :
 		$defaults = catch_gallery_default_options();
 		$options  = get_option('catch_gallery_options', $defaults);
 
-		return $options;
+		return wp_parse_args($options, $defaults);
 	}
 endif; // catch_gallery_get_options

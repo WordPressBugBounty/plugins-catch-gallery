@@ -49,7 +49,7 @@ if (! defined('ABSPATH')) exit;
                                 </td>
                                 <td>
                                     <?php $ctp_options = ctp_get_options(); ?>
-                                    <div class="module-header <?php echo $ctp_options['theme_plugin_tabs'] ? 'active' : 'inactive'; ?>">
+                                    <div class="module-header <?php echo esc_attr($ctp_options['theme_plugin_tabs'] ? 'active' : 'inactive'); ?>">
                                         <div class="switch">
                                             <input type="hidden" name="ctp_tabs_nonce" id="ctp_tabs_nonce" value="<?php echo esc_attr(wp_create_nonce('ctp_tabs_nonce')); ?>" />
                                             <input type="checkbox" id="ctp_options[theme_plugin_tabs]" class="ctp-switch" rel="theme_plugin_tabs" <?php checked(true, $ctp_options['theme_plugin_tabs']); ?>>
@@ -75,7 +75,7 @@ if (! defined('ABSPATH')) exit;
                     <div class="content">
                         <ul class="catch-lists">
                             <li>
-                                <strong><?php esc_html_e('Tiled Mosiac', 'catch-gallery'); ?></strong>
+                                <strong><?php esc_html_e('Tiled Mosaic', 'catch-gallery'); ?></strong>
                                 <p><?php esc_html_e('A normal photo gallery would often have regular spacing with unpleasant and uneven gaps between each image. With Tiled Mosaic layout, your galleries will reduce the gap between each image to produce a tiled effect. This will show your images in a beautiful mosaic layout.', 'catch-gallery'); ?></p>
                             </li>
 

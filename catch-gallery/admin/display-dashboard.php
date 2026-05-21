@@ -12,8 +12,8 @@ if (! defined('ABSPATH')) exit;
  * @link       https://catchplugins.com
  * @since      1.0.0
  *
- * @package    Catch_Ids
- * @subpackage Catch_Ids/admin/partials
+ * @package    Catch_Gallery
+ * @subpackage Catch_Gallery/admin/partials
  */
 ?>
 
@@ -56,8 +56,8 @@ wp_nonce_field(basename(__FILE__), 'catch_gallery_nounce');
 
 								<td>
 									<select id="catch_gallery_options[carousel_background_color]" name="catch_gallery_options[carousel_background_color]" class="carousel_background_color">
-										<option value="black" <?php selected($options['carousel_background_color'], 'scroll'); ?>><?php esc_html_e('Black', 'catch-gallery'); ?></option>
-										<option value="white" <?php selected($options['carousel_background_color'], 'scroll'); ?>><?php esc_html_e('White', 'catch-gallery'); ?></option>
+										<option value="black" <?php selected($options['carousel_background_color'], 'black'); ?>><?php esc_html_e('Black', 'catch-gallery'); ?></option>
+										<option value="white" <?php selected($options['carousel_background_color'], 'white'); ?>><?php esc_html_e('White', 'catch-gallery'); ?></option>
 									</select>
 								</td>
 							</tr>

@@ -117,8 +117,8 @@ if (! class_exists('Catch_Gallery_Carousel')) :
 					'post_comment'         => esc_html__('Post Comment', 'catch-gallery'),
 					'loading_comments'     => esc_html__('Loading Comments...', 'catch-gallery'),
 
-					// Translators: %1&s, %2&s is a value for a image size.
-					'download_original'    => sprintf(__('View full size <span class="photo-size">%1$s<span class="photo-size-times">&times;</span>%2$s</span>', 'catch-gallery'), '{0}', '{1}'),
+					// translators: %1$s: Image width. %2$s: Image height.
+					'download_original'    => sprintf(esc_html__('View full size <span class="photo-size">%1$s<span class="photo-size-times">&times;</span>%2$s</span>', 'catch-gallery'), '{0}', '{1}'),
 
 					'no_comment_text'      => esc_html__('Please be sure to submit some text with your comment.', 'catch-gallery'),
 					'no_comment_email'     => esc_html__('Please provide an email address to comment.', 'catch-gallery'),
@@ -175,9 +175,6 @@ if (! class_exists('Catch_Gallery_Carousel')) :
 
 				wp_enqueue_style('jetpack-carousel', plugin_dir_url(__FILE__) . '../css/jetpack-carousel.css', array(), $this->asset_version(CATCH_GALLERY_VERSION));
 				wp_style_add_data('jetpack-carousel', 'rtl', 'replace');
-
-				wp_enqueue_style('jetpack-carousel-ie8fix', plugin_dir_url(__FILE__) . '../css/jetpack-carousel-ie8fix.css', '', $this->asset_version(CATCH_GALLERY_VERSION));
-				wp_style_add_data('jetpack-carousel-ie8fix', 'conditional', 'lt IE 9');
 
 				do_action('jp_carousel_enqueue_assets', $this->first_run, $localize_strings);
 
@@ -286,7 +283,7 @@ if (! class_exists('Catch_Gallery_Carousel')) :
 
 				$extra_data = apply_filters('jp_carousel_add_data_to_container', $extra_data);
 				foreach ((array) $extra_data as $data_key => $data_values) {
-					$html = str_replace('<div ', '<div ' . esc_attr($data_key) . "='" . json_encode($data_values) . "' ", $html);
+					$html = str_replace('<div ', '<div ' . esc_attr($data_key) . "='" . esc_attr(wp_json_encode($data_values)) . "' ", $html);
 				}
 			}
 
@@ -295,21 +292,18 @@ if (! class_exists('Catch_Gallery_Carousel')) :
 
 		function get_attachment_comments()
 		{
-			if (! headers_sent())
-				header('Content-type: text/javascript');
-
 			do_action('jp_carousel_check_blog_user_privileges');
 
-			$attachment_id = (isset($_REQUEST['id'])) ? (int) $_REQUEST['id'] : 0;
-			$offset        = (isset($_REQUEST['offset'])) ? (int) $_REQUEST['offset'] : 0;
+			$attachment_id = isset($_REQUEST['id']) ? (int) $_REQUEST['id'] : 0;
+			$offset        = isset($_REQUEST['offset']) ? (int) $_REQUEST['offset'] : 0;
 
 			if (! $attachment_id) {
-				echo json_encode(esc_html__('Missing attachment ID.', 'catch-gallery'));
-				die();
+				wp_send_json_error(esc_html__('Missing attachment ID.', 'catch-gallery'));
 			}
 
-			if ($offset < 1)
+			if ($offset < 1) {
 				$offset = 0;
+			}
 
 			$comments = get_comments(array(
 				'status'  => 'approve',
@@ -319,7 +313,7 @@ if (! class_exists('Catch_Gallery_Carousel')) :
 				'post_id' => $attachment_id,
 			));
 
-			$out      = array();
+			$out = array();
 
 			// Can't just send the results, they contain the commenter's email address.
 			foreach ($comments as $comment) {
@@ -333,41 +327,44 @@ if (! class_exists('Catch_Gallery_Carousel')) :
 				);
 			}
 
-			die(json_encode($out));
+			wp_send_json($out);
 		}
 
 		function post_attachment_comment()
 		{
-			if (! headers_sent())
-				header('Content-type: text/javascript');
+			// Verify nonce first.
+			if (empty($_POST['nonce']) || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'carousel_nonce')) {
+				wp_send_json_error(esc_html__('Nonce verification failed.', 'catch-gallery'));
+			}
 
-			if (empty($_POST['nonce']) || ! wp_verify_nonce($_POST['nonce'], 'carousel_nonce'))
-				die(json_encode(array('error' => esc_html__('Nonce verification failed.', 'catch-gallery'))));
+			$_blog_id = isset($_POST['blog_id']) ? (int) $_POST['blog_id'] : 0;
+			$_post_id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+			$comment  = isset($_POST['comment']) ? sanitize_textarea_field(wp_unslash($_POST['comment'])) : '';
 
-			$_blog_id = (int) $_POST['blog_id'];
-			$_post_id = (int) $_POST['id'];
-			$comment = $_POST['comment'];
+			if (empty($_blog_id)) {
+				wp_send_json_error(esc_html__('Missing target blog ID.', 'catch-gallery'));
+			}
 
-			if (empty($_blog_id))
-				die(json_encode(array('error' => esc_html__('Missing target blog ID.', 'catch-gallery'))));
+			if (empty($_post_id)) {
+				wp_send_json_error(esc_html__('Missing target post ID.', 'catch-gallery'));
+			}
 
-			if (empty($_post_id))
-				die(json_encode(array('error' => esc_html__('Missing target post ID.', 'catch-gallery'))));
+			if (empty($comment)) {
+				wp_send_json_error(esc_html__('No comment text was submitted.', 'catch-gallery'));
+			}
 
-			if (empty($comment))
-				die(json_encode(array('error' => esc_html__('No comment text was submitted.', 'catch-gallery'))));
-
-			// Used in context like NewDash
+			// Used in context like NewDash.
 			$switched = false;
-			if (is_multisite() && $_blog_id != get_current_blog_id()) {
+			if (is_multisite() && $_blog_id !== get_current_blog_id()) {
 				switch_to_blog($_blog_id);
 				$switched = true;
 			}
 
 			do_action('jp_carousel_check_blog_user_privileges');
 
-			if (! comments_open($_post_id))
-				die(json_encode(array('error' => esc_html__('Comments on this post are closed.', 'catch-gallery'))));
+			if (! comments_open($_post_id)) {
+				wp_send_json_error(esc_html__('Comments on this post are closed.', 'catch-gallery'));
+			}
 
 			if (is_user_logged_in()) {
 				$user         = wp_get_current_user();
@@ -376,27 +373,31 @@ if (! class_exists('Catch_Gallery_Carousel')) :
 				$email        = $user->user_email;
 				$url          = $user->user_url;
 
-				if (empty($user_id))
-					die(json_encode(array('error' => esc_html__('Sorry, but we could not authenticate your request.', 'catch-gallery'))));
+				if (empty($user_id)) {
+					wp_send_json_error(esc_html__('Sorry, but we could not authenticate your request.', 'catch-gallery'));
+				}
 			} else {
 				$user_id      = 0;
-				$display_name = $_POST['author'];
-				$email        = $_POST['email'];
-				$url          = $_POST['url'];
+				$display_name = isset($_POST['author']) ? sanitize_text_field(wp_unslash($_POST['author'])) : '';
+				$email        = isset($_POST['email'])  ? sanitize_email(wp_unslash($_POST['email']))        : '';
+				$url          = isset($_POST['url'])    ? esc_url_raw(wp_unslash($_POST['url']))             : '';
 
 				if (get_option('require_name_email')) {
-					if (empty($display_name))
-						die(json_encode(array('error' => esc_html__('Please provide your name.', 'catch-gallery'))));
+					if (empty($display_name)) {
+						wp_send_json_error(esc_html__('Please provide your name.', 'catch-gallery'));
+					}
 
-					if (empty($email))
-						die(json_encode(array('error' => esc_html__('Please provide an email address.', 'catch-gallery'))));
+					if (empty($email)) {
+						wp_send_json_error(esc_html__('Please provide an email address.', 'catch-gallery'));
+					}
 
-					if (! is_email($email))
-						die(json_encode(array('error' => esc_html__('Please provide a valid email address.', 'catch-gallery'))));
+					if (! is_email($email)) {
+						wp_send_json_error(esc_html__('Please provide a valid email address.', 'catch-gallery'));
+					}
 				}
 			}
 
-			$comment_data =  array(
+			$comment_data = array(
 				'comment_content'      => $comment,
 				'comment_post_ID'      => $_post_id,
 				'comment_author'       => $display_name,
@@ -406,18 +407,20 @@ if (! class_exists('Catch_Gallery_Carousel')) :
 				'comment_type'         => '',
 			);
 
-			if (! empty($user_id))
+			if (! empty($user_id)) {
 				$comment_data['user_id'] = $user_id;
+			}
 
 			// Note: wp_new_comment() sanitizes and validates the values (too).
 			$comment_id = wp_new_comment($comment_data);
 			do_action('jp_carousel_post_attachment_comment');
 			$comment_status = wp_get_comment_status($comment_id);
 
-			if (true == $switched)
+			if (true === $switched) {
 				restore_current_blog();
+			}
 
-			die(json_encode(array('comment_id' => $comment_id, 'comment_status' => $comment_status)));
+			wp_send_json(array('comment_id' => $comment_id, 'comment_status' => $comment_status));
 		}
 	}
 endif;

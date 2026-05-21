@@ -68,7 +68,11 @@ if (! class_exists('Catch_Gallery_Tiled_Gallery')) :
 
 		public function get_attachments()
 		{
-			extract($this->atts);
+			$include = $this->atts['include'];
+			$exclude = $this->atts['exclude'];
+			$id      = $this->atts['id'];
+			$order   = $this->atts['order'];
+			$orderby = $this->atts['orderby'];
 
 			if (! empty($include)) {
 				$include      = preg_replace('/[^0-9,]+/', '', $include);
@@ -131,7 +135,7 @@ if (! class_exists('Catch_Gallery_Tiled_Gallery')) :
 
 		public function default_scripts_and_styles()
 		{
-			wp_enqueue_script('tiled-gallery', plugin_dir_url(__FILE__) . '../js/tiled-gallery.js', array('jquery'));
+			wp_enqueue_script('tiled-gallery', plugin_dir_url(__FILE__) . '../js/tiled-gallery.js', array('jquery'), CATCH_GALLERY_VERSION, true);
 
 			wp_enqueue_style('tiled-gallery', plugin_dir_url(__FILE__) . '../css/tiled-gallery.css', array(), CATCH_GALLERY_VERSION);
 			wp_style_add_data('tiled-gallery', 'rtl', 'replace');
@@ -248,24 +252,33 @@ if (! class_exists('Catch_Gallery_Tiled_Gallery')) :
 					}
 				}
 
-				//$new_img_array = '';
-				// no cached files - let's finally resize it
+				// No cached files — let's finally resize it.
 				$tp_image = wp_get_image_editor($file_path);
 				if (! is_wp_error($tp_image)) {
 					$tp_image->resize($width, $height, $crop);
 					$new_img_array = $tp_image->save();
+
+					if (is_wp_error($new_img_array) || ! isset($new_img_array['path'])) {
+						// Resize failed — return original image dimensions.
+						return array(
+							'url'    => $image_src[0],
+							'width'  => $image_src[1],
+							'height' => $image_src[2],
+						);
+					}
+
+					$new_img_size = getimagesize($new_img_array['path']);
+					$new_img      = str_replace(basename($image_src[0]), basename($new_img_array['path']), $image_src[0]);
+
+					// Resized output.
+					$vt_image = array(
+						'url'    => $new_img,
+						'width'  => $new_img_size[0],
+						'height' => $new_img_size[1],
+					);
+
+					return $vt_image;
 				}
-				$new_img_size = getimagesize($new_img_array['path']);
-				$new_img      = str_replace(basename($image_src[0]), basename($new_img_array['path']), $image_src[0]);
-
-				// resized output
-				$vt_image = array(
-					'url'    => $new_img,
-					'width'  => $new_img_size[0],
-					'height' => $new_img_size[1],
-				);
-
-				return $vt_image;
 			}
 
 			// default output - without resizing
@@ -325,7 +338,7 @@ if (! class_exists('Catch_Gallery_Tiled_Gallery')) :
 						}
 
 						if (trim($image->post_excerpt)) {
-							$output .= '<div class="tiled-gallery-caption">' . wptexturize($image->post_excerpt) . '</div>';
+							$output .= '<div class="tiled-gallery-caption">' . wp_kses_post(wptexturize($image->post_excerpt)) . '</div>';
 						}
 
 						$output .= '</div>';
@@ -382,17 +395,16 @@ if (! class_exists('Catch_Gallery_Tiled_Gallery')) :
 				$image_title = $image->post_title;
 
 				$output .= '<div class="tiled-gallery-item calling-this">';
-				$output .= '<a border="0" href="' . esc_url($link) . '"><img ' . $this->generate_carousel_image_args($image) . ' style="' . esc_attr('margin: ' . $margin . 'px') . '" src="' . $img_src['url'] . '" width=' . esc_attr($img_size) . ' height=' . esc_attr($img_size) . ' title="' . esc_attr($image_title) . '" /></a>';
+				$output .= '<a border="0" href="' . esc_url($link) . '"><img ' . $this->generate_carousel_image_args($image) . ' style="' . esc_attr('margin: ' . $margin . 'px') . '" src="' . esc_url($img_src['url']) . '" width=' . esc_attr($img_size) . ' height=' . esc_attr($img_size) . ' title="' . esc_attr($image_title) . '" /></a>';
 
 				// Grayscale effect
 				if ($this->atts['grayscale'] == true) {
-					$src     = urlencode($image->guid);
 					$output .= '<a border="0" href="' . esc_url($link) . '"><img ' . $this->generate_carousel_image_args($image) . ' style="margin: 2px" class="grayscale" src="' . esc_url('http://en.wordpress.com/imgpress?url=' . urlencode($image->guid) . '&resize=' . $img_size . ',' . $img_size . '&filter=grayscale') . '" width=' . esc_attr($img_size) . ' height=' . esc_attr($img_size) . ' title="' . esc_attr($image_title) . '" /></a>';
 				}
 
 				// Captions
 				if (trim($image->post_excerpt)) {
-					$output .= '<div class="tiled-gallery-caption">' . wptexturize($image->post_excerpt) . '</div>';
+					$output .= '<div class="tiled-gallery-caption">' . wp_kses_post(wptexturize($image->post_excerpt)) . '</div>';
 				}
 				$output .= '</div>';
 				$c++;
@@ -425,7 +437,7 @@ if (! class_exists('Catch_Gallery_Tiled_Gallery')) :
 			);
 
 			foreach ((array) $extra_data as $data_key => $data_values) {
-				$html = str_replace('<div ', '<div ' . esc_attr($data_key) . "='" . json_encode($data_values) . "' ", $html);
+				$html = str_replace('<div ', '<div ' . esc_attr($data_key) . "='" . esc_attr(wp_json_encode($data_values)) . "' ", $html);
 			}
 
 			return $html;
@@ -461,7 +473,7 @@ if (! class_exists('Catch_Gallery_Tiled_Gallery')) :
 			$output = sprintf(
 				'data-attachment-id="%1$d" data-orig-file="%2$s" data-orig-size="%3$s" data-comments-opened="%4$s" data-image-meta="%5$s" data-image-title="%6$s" data-image-description="%7$s" data-medium-file="%8$s" data-large-file="%9$s"',
 				esc_attr($attachment_id),
-				esc_url(wp_get_attachment_url($attachment_id)),
+				esc_url($orig_file),
 				esc_attr($size),
 				esc_attr($comments_opened),
 				esc_attr($img_meta),

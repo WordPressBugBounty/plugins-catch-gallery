@@ -3,8 +3,9 @@ Contributors: catchplugins, catchthemes, sakinshrestha, pratikshrestha, maheshma
 Donate link: https://catchplugins.com/plugins/catch-gallery/
 Tags: gallery, tiled gallery, image gallery, mosaic, carousel, lightbox, media, jetpack, jetpack lite
 Requires at least: 5.9
-Tested up to: 6.9
-Stable tag: 2.4.1
+Requires PHP: 7.4
+Tested up to: 7.0
+Stable tag: 3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,6 +51,32 @@ Not so easy way (via FTP) :
 For Detailed Plugin instructions, checkout Instructions tab at https://catchplugins.com/plugins/catch-gallery/#instructions
 
 == Changelog ==
+
+= 3.0 (Released: May 21, 2026) =
+* Bug Fixed: Settings page capability changed from 'edit_posts' to 'manage_options' — only administrators should be able to modify global gallery settings
+* Bug Fixed: Inverted nonce logic in catch_gallery_sanitize_callback() — was saving data on nonce failure and returning 'Invalid Nonce' string on success, corrupting saved settings
+* Bug Fixed: Carousel Background Color dropdown always showed no selection — both <option> elements compared against 'scroll' instead of 'black'/'white'
+* Bug Fixed: Unsanitized $_POST inputs in post_attachment_comment() — added sanitize_textarea_field(), sanitize_text_field(), sanitize_email(), esc_url_raw() and wp_unslash()
+* Bug Fixed: Missing wp_verify_nonce() unslash in post_attachment_comment()
+* Bug Fixed: Unescaped $img_src['url'] in square_talavera() — wrapped with esc_url()
+* Bug Fixed: Unescaped $ctp_options output in catch-gallery-display.php — wrapped with esc_attr()
+* Bug Fixed: wptexturize() caption output not escaped — wrapped with wp_kses_post()
+* Bug Fixed: json_encode() in HTML attributes replaced with esc_attr( wp_json_encode() ) in tiled-gallery.php and jetpack-carousel.php
+* Bug Fixed: die(json_encode()) and header() patterns replaced with wp_send_json() / wp_send_json_error() in jetpack-carousel.php
+* Bug Fixed: Missing error check after wp_get_image_editor()->save() in vt_resize() — now returns original image on failure
+* Bug Fixed: extract() replaced with explicit variable assignments in get_attachments()
+* Bug Fixed: Missing wp_parse_args() in catch_gallery_get_options() — new default options were not applied to existing installations
+* Bug Fixed: Missing version number on tiled-gallery script enqueue causing browser cache issues
+* Bug Fixed: Duplicate wp_get_attachment_url() call in generate_carousel_image_args() — reuses already-fetched $orig_file
+* Bug Fixed: Wrong @package annotation in display-dashboard.php — was 'Catch_Ids', corrected to 'Catch_Gallery'
+* Bug Fixed: Typo 'Tiled Mosiac' corrected to 'Tiled Mosaic' in features tab
+* Bug Fixed: Loose null == comparison changed to strict null === in catch_gallery_default_options()
+* Bug Fixed: __() changed to esc_html__() in core_media_widget_compat() schema description
+* Bug Fixed: Raw HTML in plugin meta links row wrapped with wp_kses()
+* Bug Fixed: IE8 conditional stylesheet removed — IE8/IE9 no longer supported by WordPress
+* Bug Fixed: include() changed to require_once for critical plugin files in catch-gallery.php
+* Updated: Minimum Requires PHP to 7.4
+* Compatibility check up to version 7.0
 
 = 2.4.1 (Released: February 25, 2026) =
 * Bug Fixed: Fixed JS enqueue path for adding catch themes tab item in Themes add theme section
