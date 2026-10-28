@@ -5,7 +5,7 @@ Tags: gallery, tiled gallery, image gallery, mosaic, carousel, lightbox, media, 
 Requires at least: 5.9
 Requires PHP: 7.4
 Tested up to: 7.0
-Stable tag: 3.0
+Stable tag: 3.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,11 @@ Not so easy way (via FTP) :
 For Detailed Plugin instructions, checkout Instructions tab at https://catchplugins.com/plugins/catch-gallery/#instructions
 
 == Changelog ==
+
+= 3.0.1 (Released: October 28, 2026) =
+* Bug Fixed: Galleries shown outside a post, such as in a widget on a 404 or search page, no longer cause PHP warnings
+* Bug Fixed: Gallery carousel now links to the gallery's own post instead of failing when there is no current post
+* Bug Fixed: Custom "orderby" values in the gallery shortcode are now checked before use
 
 = 3.0 (Released: May 21, 2026) =
 * Bug Fixed: Settings page capability changed from 'edit_posts' to 'manage_options' — only administrators should be able to modify global gallery settings

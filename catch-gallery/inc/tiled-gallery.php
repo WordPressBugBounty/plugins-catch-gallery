@@ -33,7 +33,8 @@ if (! class_exists('Catch_Gallery_Tiled_Gallery')) :
 
 		public function set_atts($atts)
 		{
-			global $post;
+			// No current post when the gallery is outside the loop (widgets on 404, search, empty archives).
+			$post = get_post();
 
 			$this->atts = shortcode_atts(
 				array(
@@ -41,7 +42,7 @@ if (! class_exists('Catch_Gallery_Tiled_Gallery')) :
 					'size'      => 'full',
 					'order'     => 'ASC',
 					'orderby'   => 'menu_order ID',
-					'id'        => $post->ID,
+					'id'        => $post ? $post->ID : 0,
 					'include'   => '',
 					'exclude'   => '',
 					'type'      => '',
@@ -54,7 +55,7 @@ if (! class_exists('Catch_Gallery_Tiled_Gallery')) :
 			$this->atts['id'] = (int) $this->atts['id'];
 			$this->float      = is_rtl() ? 'right' : 'left';
 
-			if (! $this->atts['orderby']) {
+			if ($this->atts['orderby']) {
 				$this->atts['orderby'] = sanitize_sql_orderby($this->atts['orderby']);
 				if (! $this->atts['orderby']) {
 					$this->atts['orderby'] = 'menu_order ID';
@@ -425,14 +426,12 @@ if (! class_exists('Catch_Gallery_Tiled_Gallery')) :
 
 		function generate_carousel_container()
 		{
-			global $post;
-
 			$html       = '<div ' . $this->gallery_classes() . ' data-original-width="' . esc_attr(self::get_content_width()) . '">';
 			$blog_id    = (int) get_current_blog_id();
 			$extra_data = array(
 				'data-carousel-extra' => array(
 					'blog_id'   => $blog_id,
-					'permalink' => get_permalink($post->ID),
+					'permalink' => $this->atts['id'] ? get_permalink($this->atts['id']) : '',
 				),
 			);
 
